@@ -1,7 +1,7 @@
 #!/usr/bin/python
 import datetime
 from settings import *
-
+import os
 
 class LogFile():
     def __init__(self):
@@ -29,6 +29,17 @@ class Entry():
         LogFile.addEntry(self)
         LogFile.IpFreqAdd(self.ip)
 
+    def __str__(self):
+        return '\nIP: ' + self.ip + '\n' + \
+               'Datetime: ' + str(self.time) + '\n' + \
+               'User Agent: ' + self.userAgent + '\n' + \
+               'Document: ' + self.document + '\n' + \
+               'Status Code: ' + str(self.status_code)
+
+def logNotLoaded():
+    os.system('clear')
+    print MSG['Load Log Error']
+
 
 welcomeMessage = '''                    Apache log analyzer
                     Rafael Herrero Solis'''
@@ -37,7 +48,18 @@ menuOptions = '''1) Load log file
 2) View general stats
 3) View IP stats
 4) Select ip and view activity
-5) Close log file'''
+5) Close log file
+6) View status code >= 400'''
+
+
+MSG ={
+    'Load Log Error': '\n***ERROR***\nYou must load a log file firs.\n',
+    'Menu Select': '\nSelect option (q to quit):',
+    'Press Enter': '\nPress enter to continue...',
+    'Enter Number': '\nEnter option number: ',
+    'File Path': 'Input log file path: ',
+    'Path error': 'Log file not found: '
+}
 
 STATUS_CODE = {
     100: 'Continue',

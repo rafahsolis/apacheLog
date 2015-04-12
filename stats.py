@@ -3,11 +3,11 @@ import lib.apacheLogStatslib as apacheLib
 import os
 import csv
 import datetime
-
+TODAY = datetime.datetime.now().date()
 
 def loadLog():
     siteLog = apacheLib.LogFile()
-    logFileName = raw_input('Input log file path: ')
+    logFileName = raw_input(apacheLib.MSG['File Path'])
 
     if len(logFileName) < 1:
         logFileName = 'access.log'
@@ -15,7 +15,7 @@ def loadLog():
     try:
         logFile = open(logFileName, 'r')
     except:
-        print 'Log file not found: ', logFileName
+        print apacheLib.MSG['Path error'], logFileName
 
     fileReader = csv.reader(logFile, delimiter=' ')
     for line in fileReader:
@@ -33,18 +33,59 @@ def accessStats(siteLog):
     sortedList = sorted([(v, k) for k, v in siteLog.ip_freq.items()], reverse=True)
     for value, ip in sortedList:
         print value, '\t', ip
-    print ''
-
+    raw_input(apacheLib.MSG['Press Enter'])
+    os.system('clear')
     return
 
 
-def generalStats(siteLog):
-    print 'WIP'
-    # @ToDo: visits this year
-    # @ToDo: visits this month
-    # @ToDo: Visits this week
-    # @ToDo: visits today
+def visitsThisYear(siteLog):
 
+    yearEntrys = []
+    # @ToDo: Show more info about visits
+    for entry in siteLog.entryData:
+        if TODAY.year == entry.time.year:
+            yearEntrys.append(entry)
+    print 'Total entrys year', TODAY.year, len(yearEntrys)
+
+
+def visitsThisMonth(siteLog):
+
+    monthEntrys = []
+    # @ToDo: Show more info about visits
+    for entry in siteLog.entryData:
+        if TODAY.month == entry.time.month:
+            monthEntrys.append(entry)
+    print 'Total entrys month', TODAY.month, len(monthEntrys)
+
+
+def visitsThisWeek(siteLog):
+    weekEntrys = []
+    for entry in siteLog.entryData:
+        if TODAY.isocalendar()[1] == entry.time.isocalendar()[1]:
+            weekEntrys.append(entry)
+    print "Total entrys week", TODAY.isocalendar()[1], len(weekEntrys)
+
+
+def visitsToday(siteLog):
+    dayEntrys = []
+    for entry in siteLog.entryData:
+        if entry.time.month == TODAY.month and entry.time.day == TODAY.day and entry.time.year == TODAY.year:
+            dayEntrys.append(entry)
+
+    print "Total entrys today: ", len(dayEntrys)
+
+
+
+def generalStats(siteLog):
+    os.system('clear')
+
+    visitsThisYear(siteLog)
+    visitsThisMonth(siteLog)
+    # @ToDo: Visits this week
+    visitsThisWeek(siteLog)
+    visitsToday(siteLog)
+    raw_input(apacheLib.MSG['Press Enter'])
+    os.system('clear')
 
 
 def closeLog(siteLog):
@@ -62,7 +103,7 @@ def selectIP(siteLog):
         counter += 1
 
     # @ToDo Error control in ip number input
-    opt = int(raw_input("Number: "))
+    opt = int(raw_input(apacheLib.MSG['Enter Number']))
     ip_option = siteLog.ip_freq.keys()[opt]
     return ip_option
 
@@ -87,15 +128,26 @@ def ipStats(siteLog):
         print 'Status code: ', i.status_code, apacheLib.STATUS_CODE[i.status_code]
         print 'Document: ', i.document
 
-    raw_input('Press enter to continue...')
+    raw_input(apacheLib.MSG['Press Enter'])
     os.system('clear')
+
+
+def viewErrors(siteLog):
+    entryErrors = []
+
+    for entry in siteLog.entryData:
+        if entry.status_code >= 400:
+            entryErrors.append(entry)
+            print entry
+
+    raw_input(apacheLib.MSG['Press Enter'])
 
 
 def menu():
     option = None
     while option != 'q':
         print apacheLib.menuOptions
-        option = raw_input('\nSelect option (q to quit): ')
+        option = raw_input(apacheLib.MSG['Menu Select'])
  
         if option == '1':
             siteLog = loadLog()
@@ -104,22 +156,30 @@ def menu():
             try:
                 generalStats(siteLog)
             except:
-                print 'You must load a log file first.'
+                apacheLib.logNotLoaded()
 
         elif option == '3':
             try:
                 accessStats(siteLog)
             except:
-                print 'You must load a log file first.'
+                apacheLib.logNotLoaded()
 
         elif option == '4':
-            ipStats(siteLog)
-            # print 'You must load a log file first.'
+            try:
+                ipStats(siteLog)
+            except:
+                apacheLib.logNotLoaded()
         elif option == '5':
             try:
                 del(siteLog)
+                os.system('clear')
+                print 'Log closed.'
             except:
-                closeLog(siteLog)
+                apacheLib.logNotLoaded()
+
+        elif option == '6':
+            viewErrors(siteLog)
+
         else:
             os.system('clear')
         
